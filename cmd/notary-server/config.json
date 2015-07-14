@@ -1,19 +1,22 @@
 {
 	"server": {
-		"addr": ":4443",
-		"tls_cert_file": "./fixtures/notary.pem",
-		"tls_key_file": "./fixtures/notary.key"
+            "tls_cert_file": "./fixtures/notary.pem",
+            "tls_key_file": "./fixtures/notary.key",
+	    "addr": ":4443"
 	},
 	"trust_service": {
 		"type": "local",
-		"hostname": "rufus",
-		"port": "7899",
-		"tls_ca_file": "./fixtures/ca.cert"
+		"hostname": "",
+		"port": ""
 	},
 	"logging": {
 		"level": 5
 	},
-	"storage": {
-		"db_url": "dockercondemo:dockercondemo@tcp(notarymysql:3306)/dockercondemo"
-	}
+        "store": {
+                "backend" : "mysql"
+        },
+    "storage": {
+        "db_url": "root:${notary_db_password}@tcp(notary-db.stage-us-east-1.aws.dckr.io:3306)/notary"
+        
+    }
 }

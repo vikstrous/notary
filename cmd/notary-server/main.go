@@ -87,11 +87,19 @@ func main() {
 
 	if viper.GetString("store.backend") == "mysql" {
 		dbURL := viper.GetString("storage.db_url")
+		pw := os.Getenv("notary_db_password")
+		dbURL = strings.Replace(dbURL, "${notary_db_password}", pw, 1)
 		db, err := sql.Open("mysql", dbURL)
 		if err != nil {
-			logrus.Fatal("[Notary Server] Error starting DB driver: ", err.Error())
+			logrus.Fatal("[Notary Server] : Error starting DB driver: ", err.Error())
 			return // not strictly needed but let's be explicit
 		}
+		logrus.Info("[Notary Server] : Pinging db...")
+		err = db.Ping()
+		if err != nil {
+			logrus.Fatalf("[Notary Server] : Failed to ping database")
+		}
+
 		ctx = context.WithValue(ctx, "metaStore", storage.NewMySQLStorage(db))
 	} else {
 		ctx = context.WithValue(ctx, "metaStore", storage.NewMemStorage())
