@@ -3,6 +3,7 @@ package signed
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -52,7 +53,13 @@ func VerifyRoot(s *data.Signed, minVersion int, keys map[string]data.PublicKey) 
 			continue
 		}
 
-		if err := verifier.Verify(keys[sig.KeyID], sig.Signature, msg); err != nil {
+		key, ok := keys[sig.KeyID]
+		if !ok {
+			logrus.Debugf("continuing b/c signing key isn't present in keys: %s\n", sig.KeyID)
+			continue
+		}
+
+		if err := verifier.Verify(key, sig.Signature, msg); err != nil {
 			logrus.Debugf("continuing b/c signature was invalid\n")
 			continue
 		}
@@ -109,6 +116,11 @@ func VerifySignatures(s *data.Signed, role string, db *keys.KeyDB) error {
 		return ErrUnknownRole
 	}
 
+	if roleData.Threshold < 1 {
+		return ErrRoleThreshold
+	}
+	logrus.Debugf("%s role has key IDs: %s", role, strings.Join(roleData.KeyIDs, ","))
+
 	var decoded map[string]interface{}
 	if err := json.Unmarshal(s.Signed, &decoded); err != nil {
 		return err
@@ -120,6 +132,7 @@ func VerifySignatures(s *data.Signed, role string, db *keys.KeyDB) error {
 
 	valid := make(map[string]struct{})
 	for _, sig := range s.Signatures {
+		logrus.Debug("verifying signature for key ID: ", sig.KeyID)
 		if !roleData.ValidKey(sig.KeyID) {
 			logrus.Debugf("continuing b/c keyid was invalid: %s for roledata %s\n", sig.KeyID, roleData)
 			continue
