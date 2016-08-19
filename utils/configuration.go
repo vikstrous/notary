@@ -139,16 +139,6 @@ func ParseRethinkDBStorage(configuration *viper.Viper) (*RethinkDBStorage, error
 			"must provide a non-empty host:port for %s",
 			store.Backend,
 		)
-	case store.CA == "":
-		return nil, fmt.Errorf(
-			"cowardly refusal to connect to %s without a CA cert",
-			store.Backend,
-		)
-	case store.Cert == "" || store.Key == "":
-		return nil, fmt.Errorf(
-			"cowardly refusal to connect to %s without a client cert and key",
-			store.Backend,
-		)
 	case store.DBName == "":
 		return nil, fmt.Errorf(
 			"%s requires a specific database to connect to",

@@ -107,10 +107,13 @@ func getStore(configuration *viper.Viper, hRegister healthRegister, doBootstrap 
 		if err != nil {
 			return nil, err
 		}
-		tlsOpts := tlsconfig.Options{
-			CAFile:   storeConfig.CA,
-			CertFile: storeConfig.Cert,
-			KeyFile:  storeConfig.Key,
+		var tlsOpts tlsconfig.Options
+		if storeConfig.CA != "" || storeConfig.Cert != "" || storeConfig.Key != "" {
+			tlsOpts = tlsconfig.Options{
+				CAFile:   storeConfig.CA,
+				CertFile: storeConfig.Cert,
+				KeyFile:  storeConfig.Key,
+			}
 		}
 		if doBootstrap {
 			sess, err = rethinkdb.AdminConnection(tlsOpts, storeConfig.Source)
